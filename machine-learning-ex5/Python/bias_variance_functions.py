@@ -7,7 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from linear_regression import LinearRegression as LR
 
-def learningCurve(X, y, Xval, yval, ilambda):
+def learning_curve(X, y, Xval, yval, ilambda):
 	""" 计算学习曲线所需的参数, 返回训练误差, 交叉验证误差"""
 	
 	# 随机选择训练样本以及验证样本, 重复50次取误差的平均值
@@ -23,10 +23,10 @@ def learningCurve(X, y, Xval, yval, ilambda):
 	for i in range(m):	
 		# 建立线性回归模型
 		my_lr = LR(X[0:i+1, :], y[0:i+1])	
-		my_lr.gradientDescentReg(0.001, ilambda, 5000)
+		my_lr.gradient_descent_reg(0.001, ilambda, 5000)
 		theta = my_lr.theta
-		error_train[i:], _ = my_lr.computeCostReg(theta, 0, X=X[:i+1, :], y=y[:i+1])
-		error_val[i:], _ = my_lr.computeCostReg(theta, 0, X=Xval, y=yval)
+		error_train[i:], _ = my_lr.compute_cost_reg(theta, 0, X=X[:i+1, :], y=y[:i+1])
+		error_val[i:], _ = my_lr.compute_cost_reg(theta, 0, X=Xval, y=yval)
 
 	# ~ for i in range(m):	
 		# ~ print("样本 {}".format(i+1))
@@ -44,14 +44,14 @@ def learningCurve(X, y, Xval, yval, ilambda):
 			# ~ my_lr = LR(X[sel_1, :], y[sel_1])	
 			
 			# ~ # 使用不用的训练样本进行参数学习 -> 进行验证
-			# ~ my_lr.gradientDescentReg(0.001, ilambda, 5000)
+			# ~ my_lr.gradient_descent_reg(0.001, ilambda, 5000)
 			# ~ theta = my_lr.theta
 			
 			# ~ # 使用不同训练样本计算训练误差, lambda=0
-			# ~ cost_train, _ = my_lr.computeCostReg(theta, 0, X=X[sel_1, :], y=y[sel_1])
+			# ~ cost_train, _ = my_lr.compute_cost_reg(theta, 0, X=X[sel_1, :], y=y[sel_1])
 			# ~ error_train[i:] += cost_train
 			# ~ # 使用全部交叉验证样本计算交叉验证误差, lambda=0
-			# ~ cost_val, _ = my_lr.computeCostReg(theta, 0, X=Xval[sel_2, :], y=yval[sel_2])
+			# ~ cost_val, _ = my_lr.compute_cost_reg(theta, 0, X=Xval[sel_2, :], y=yval[sel_2])
 			# ~ error_val[i:] += cost_val
 	
 	# ~ # 计算误差平均值		
@@ -61,7 +61,7 @@ def learningCurve(X, y, Xval, yval, ilambda):
 	return error_train, error_val
 
 
-def polyFeatures(X, p):
+def poly_features(X, p):
 	""" 进行多项式的映射 """
 	X_poly = np.zeros((X.size, p))
 
@@ -71,26 +71,26 @@ def polyFeatures(X, p):
 
 	return X_poly
 
-def featureNormalize(X):
+def feature_normalize(X):
 	""" 特征规范化 """	
 	mu = X.mean(0)				# 每列特征值均值
 	sigma = X.std(0)			# 每列特征值标准差
 	X_norm = (X - mu) / sigma	
 	return X_norm, mu, sigma
 
-def plotFit(min_x, max_x, mu, sigma, theta, p):
+def plot_fit(min_x, max_x, mu, sigma, theta, p):
 	""" 进行多项式数据的拟合 """
 	x = np.arange(min_x - 15, max_x + 25, 0.05)
 	x = x.reshape(x.size, 1)
 	
-	X_poly = polyFeatures(x, p)
+	X_poly = poly_features(x, p)
 	X_poly = (X_poly - mu) / sigma
 	
 	X_poly = np.hstack((np.ones((X_poly.shape[0], 1)), X_poly))     # 加入 1 列
 
 	plt.plot(x, X_poly @ theta, '--', LineWidth=2)
 
-def validationCurve(X, y, Xval, yval):
+def validation_curve(X, y, Xval, yval):
 	""" 自动选择lambda """
 	lambda_vec = np.array([0, 0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10])
 	lambda_vec = lambda_vec.reshape(lambda_vec.size, 1)
@@ -105,9 +105,9 @@ def validationCurve(X, y, Xval, yval):
 		
 		#建立模型, 获得参数, 计算误差
 		my_lr = LR(X, y)	
-		my_lr.gradientDescentReg(0.001, ilambda, 5000)
+		my_lr.gradient_descent_reg(0.001, ilambda, 5000)
 		theta = my_lr.theta
-		error_train[i:], _ = my_lr.computeCostReg(theta, 0, X=X, y=y)
-		error_val[i:], _ = my_lr.computeCostReg(theta, 0, X=Xval, y=yval)
+		error_train[i:], _ = my_lr.compute_cost_reg(theta, 0, X=X, y=y)
+		error_val[i:], _ = my_lr.compute_cost_reg(theta, 0, X=Xval, y=yval)
 			
 	return  lambda_vec, error_train, error_val

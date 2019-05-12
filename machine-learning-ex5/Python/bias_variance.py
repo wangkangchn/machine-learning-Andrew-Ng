@@ -49,7 +49,7 @@ ilambda = 1		# 使用iambda控制是否正则化
 # 创建模型
 my_lr = LR(np.hstack((np.ones((m, 1)), X)) , y)
 # 计算代价值与梯度
-cost, grad = my_lr.computeCostReg(theta, ilambda)
+cost, grad = my_lr.compute_cost_reg(theta, ilambda)
 
 print('在 theta = [1; 1] 时, 代价值为: {:.6f} '
         '\n(这个值大约是 303.993192)\n'.format(float(cost)))
@@ -65,7 +65,7 @@ alpha = 0.001
 num_iters = 5000
 
 # 使用梯度下降进行训练
-my_lr.gradientDescentReg(alpha, ilambda, num_iters)
+my_lr.gradient_descent_reg(alpha, ilambda, num_iters)
 theta = my_lr.theta
 
 # 对数据进行拟合
@@ -81,7 +81,7 @@ plt.show()
 
 print("计算训练误差以及交叉验证误差...")
 ilambda = 0;
-error_train, error_val = bvf.learningCurve(np.hstack((np.ones((m, 1)), X)), y, 
+error_train, error_val = bvf.learning_curve(np.hstack((np.ones((m, 1)), X)), y, 
         np.hstack((np.ones((Xval.shape[0], 1)), Xval)), yval, ilambda)
 
 plt.plot(np.arange(1, m+1), error_train)
@@ -106,17 +106,17 @@ for i in range(m):
 p = 8;
 
 # 对X进行映射以及进行规范化
-X_poly = bvf.polyFeatures(X, p)
-X_poly, mu, sigma = bvf.featureNormalize(X_poly)  # 规范化
+X_poly = bvf.poly_features(X, p)
+X_poly, mu, sigma = bvf.feature_normalize(X_poly)  # 规范化
 X_poly = np.hstack((np.ones((m, 1)), X_poly))     # 加入 1 列
 
 # 使用 mu sigma 对测试集进行映射规范
-X_poly_test = bvf.polyFeatures(Xtest, p)
+X_poly_test = bvf.poly_features(Xtest, p)
 X_poly_test = (X_poly_test - mu) / sigma
 X_poly_test = np.hstack((np.ones((X_poly_test.shape[0], 1)), X_poly_test))     # 加入 1 列
 
 # 使用 mu sigma 对映射集进行映射规范
-X_poly_val = bvf.polyFeatures(Xval, p)
+X_poly_val = bvf.poly_features(Xval, p)
 X_poly_val = (X_poly_val - mu) / sigma
 X_poly_val = np.hstack((np.ones((X_poly_val.shape[0], 1)), X_poly_val))     # 加入 1 列
 
@@ -130,14 +130,14 @@ print('  {}  '.format(X_poly[1, :]))
 ilambda = 0.01
 m_alpha = 0.001			# 多项式回归学习率
 my_lr = LR(X_poly, y)
-my_lr.gradientDescentReg(m_alpha, ilambda, num_iters)
+my_lr.gradient_descent_reg(m_alpha, ilambda, num_iters)
 theta = my_lr.theta
 
 # 进行数据拟合
 print('进行多项式数据拟合...\n')
 plt.figure(1)
 plt.plot(X, y, 'rx', MarkerSize=10, LineWidth=1.5)
-bvf.plotFit(np.min(X), np.max(X), mu, sigma, theta, p)
+bvf.plot_fit(np.min(X), np.max(X), mu, sigma, theta, p)
 
 plt.xlabel('Change in water level (x)')
 plt.ylabel('Water flowing out of the dam (y)')
@@ -145,7 +145,7 @@ plt.title ('Polynomial Regression Fit (lambda = {})'.format(ilambda))
 
 print('绘制多项式学习曲线...')
 plt.figure(2)
-error_train, error_val = bvf.learningCurve(X_poly, y, X_poly_val, yval, ilambda)
+error_train, error_val = bvf.learning_curve(X_poly, y, X_poly_val, yval, ilambda)
 
 plt.plot(np.arange(1, m+1), error_train)
 plt.plot(np.arange(1, m+1), error_val)
@@ -167,7 +167,7 @@ for i in range(m):
 #
 
 # 计算多项式的训练与验证误差
-lambda_vec, error_train, error_val = bvf.validationCurve(X_poly, y, X_poly_val, yval)
+lambda_vec, error_train, error_val = bvf.validation_curve(X_poly, y, X_poly_val, yval)
 
 # 绘制学习曲线
 plt.plot(lambda_vec, error_train, lambda_vec, error_val)
@@ -186,7 +186,7 @@ ilambda = lambda_vec[p]
 
 # 进行测试误差的计算
 # 进行了规范化所有的样本就都需要规范化, 误差计算不带正则项
-error_test, _ = my_lr.computeCostReg(theta, 0, X=X_poly_test, y=ytest)
+error_test, _ = my_lr.compute_cost_reg(theta, 0, X=X_poly_test, y=ytest)
 print('\n最佳lambda: {}\n测试误差: {:.6f}\n'.format(float(ilambda), float(error_test)))
 
 

@@ -19,22 +19,22 @@ class LinearRegression:
 			sigma	 :		每列特征的标准差
 		
 		方法：
-			featureNormalize  	-	特征均值归一化
-			mapFeature			-   进行特征值多项式映射
+			feature_normalize  	-	特征均值归一化
+			map_feature			-   进行特征值多项式映射
 			
-			computeCost		  	- 	计算代价值
-			computeCostReg		- 	计算正则代价值
+			compute_cost		  	- 	计算代价值
+			compute_cost_reg		- 	计算正则代价值
 			
-			gradientDescent		-	梯度下降算法	
-			gradientDescentReg	-	正则梯度下降算法
+			gradient_descent		-	梯度下降算法	
+			gradient_descent_reg	-	正则梯度下降算法
 			
-			normalEqn			-	正规方程算法
-			normalEqnReg		-	正则正规方程算法
+			normal_Eqn			-	正规方程算法
+			normal_Eqn_reg		-	正则正规方程算法
 			
-			predictionGD		-	梯度下降算法预测
-			predictionEqn		-	正规方程算法预测
+			prediction_GD		-	梯度下降算法预测
+			prediction_Eqn		-	正规方程算法预测
 			
-			plotData			-   绘制代价函数图像
+			plot_data			-   绘制代价函数图像
 	"""
 	
 	def __init__ (self, X, y):
@@ -44,13 +44,13 @@ class LinearRegression:
 		self.y = y
 		self.theta = np.zeros((self.X.shape[1], 1))	#与特征个数一致	
 	
-	def featureNormalize (self, X):
+	def feature_normalize (self, X):
 		""" 进行特征值的均值归一化 """
 		self.mu = X.mean(0)				#每列特征值均值
 		self.sigma = X.std(0)			#每列特征值标准差
 		return (X - self.mu) / self.sigma	
 	
-	def mapFeature(self, X1, X2):
+	def map_feature(self, X1, X2):
 		""" 进行多项式特征的映射 """	
 		degree = 6;
 		out = np.ones((X1.shape[0], 1))	#计算行数
@@ -59,12 +59,12 @@ class LinearRegression:
 		       out = np.hstack((out, np.power(X1, (i-j)) * np.power(X2, j)))	  
 		return out
 		
-	def computeCost (self, theta):
+	def compute_cost (self, theta):
 		""" 代价函数 """
 		J = 1 / (2 * self.m) * ((self.X @ theta - self.y).T @ (self.X @ theta - self.y))
 		return J
 		
-	def computeCostReg (self, theta, ilambda, X=None, y=None,):
+	def compute_cost_reg (self, theta, ilambda, X=None, y=None,):
 		""" 计算代价与梯度, 供测试使用 """
 		if X is not None and y is not None:
 			# 传入数据, 使用传入的数据进行计算
@@ -83,48 +83,48 @@ class LinearRegression:
 				
 		return J, grad
 		
-	def gradientDescent (self, alpha, num_iters, normalize=False):
+	def gradient_descent (self, alpha, num_iters, normalize=False):
 		""" 梯度下降算法 """
 		self.alpha = alpha				#学习率
 		self.num_iters = num_iters
 		
 		if normalize:
-			self.X = self.featureNormalize(self.X)	
+			self.X = self.feature_normalize(self.X)	
 		self.X = np.hstack((np.ones((self.m, 1)), self.X))
 					
 		J_history = np.zeros(self.num_iters)						#保存每次迭代的J值
 		
 		for iter in range(self.num_iters):
 			self.theta = self.theta - self.alpha / self.m * (self.X.T @ (self.X @ self.theta - self.y))
-			J_history[iter] = self.computeCost(self.theta)
+			J_history[iter] = self.compute_cost(self.theta)
 		
 		#绘制迭代次数及对应的J值图像
-		self.plotData(np.arange(self.num_iters), J_history)
+		self.plot_data(np.arange(self.num_iters), J_history)
 		
-	def gradientDescentReg (self, alpha, ilambda, num_iters, normalize=False):
+	def gradient_descent_reg (self, alpha, ilambda, num_iters, normalize=False):
 		""" 梯度下降算法 """
 		if normalize:
-			self.X = self.featureNormalize(self.X)		
+			self.X = self.feature_normalize(self.X)		
 					
 		J_history = np.zeros(num_iters)						#保存每次迭代的J值
 		
 		for iter in range(num_iters):
 			
-			J_history[iter], grad = self.computeCostReg(self.theta, ilambda)
+			J_history[iter], grad = self.compute_cost_reg(self.theta, ilambda)
 			
 			self.theta[0] -= alpha * grad[0] 
 			self.theta[1:] -= alpha * grad[1:]
 		
 		#绘制迭代次数及对应的J值图像
-		# ~ self.plotData(np.arange(num_iters), J_history)
+		# ~ self.plot_data(np.arange(num_iters), J_history)
 	
-	def normalEqn (self):
+	def normal_Eqn (self):
 		""" 正规方程算法 """		
 		self.X = np.hstack((np.ones((self.m, 1)), self.X))	
 		#np.linalg.inv(A)计算逆矩阵 numpy.linalg模块包含线性代数的函数
 		self.theta = np.linalg.inv(self.X.T @ self.X) @ self.X.T @ self.y	
 	
-	def normalEqnReg (self, ilambda):
+	def normal_Eqn_reg (self, ilambda):
 		""" 正则化正规方程算法 """		
 		self.X = np.hstack((np.ones((self.m, 1)), self.X))	
 		
@@ -133,19 +133,19 @@ class LinearRegression:
 
 		self.theta = np.linalg.inv(self.X.T @ self.X + ilambda*reg) @ self.X.T @ self.y	
 	
-	def predictionGD(self, X):
+	def prediction_GD(self, X):
 		""" 梯度下降算法预测 """
 		#先归一再计算
 		X_n = (X - self.mu) / self.sigma
 		X_p = np.hstack((np.ones((X_n.shape[0], 1)), X_n))
 		return X_p @ self.theta 	
 		
-	def predictionEqn(self, X):
+	def prediction_Eqn(self, X):
 		""" 正规方程算法预测 """
 		X_p = np.hstack((np.ones((X.shape[0], 1)), X))
 		return X_p @ self.theta 	
 		
-	def plotData (self, x, y):
+	def plot_data (self, x, y):
 		""" 绘制代价图像 """
 		plt.plot(x, y)
 		plt.title('Cost')	
