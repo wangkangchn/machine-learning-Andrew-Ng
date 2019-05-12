@@ -236,7 +236,7 @@ lambda = lambda_vec(p);
 [theta] = trainLinearReg(X_poly, y, lambda);
 % 进行了规范化所有的样本就都需要规范化
 error_test = linearRegCostFunction(X_poly_test, ytest, theta, 0);		
-fprintf('Test Error: %f\n', error_test);
+fprintf('Best Lambda: %f\nTest Error: %f\n',lambda, error_test);
 
 
 
