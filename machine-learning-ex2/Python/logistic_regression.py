@@ -24,7 +24,7 @@ class LogisticRegression:
         方法：
             feature_normalize    -   特征均值归一化
             init_parameterdata       -   初始化梯度下降中使用的参数 X, theta, J
-            sigmiod             -   假设函数
+            sigmoid             -   假设函数
 
             compute_cost         -   代价函数
             compute_cost      -   正则代价函数
@@ -43,18 +43,24 @@ class LogisticRegression:
         self.m = y.shape[0]                 #训练集数目
         self.X = X                          #训练数据
         self.y = y                          #标记
-        self.theta = np.zeros((self.X.shape[1], 1))     
+        self.theta = np.zeros((self.X.shape[1], 1))
 
-    def sigmiod (self, z):
+    def sigmoid (self, z):
         """ 假设函数 """
         return 1 / (1 + np.exp(-z))
 
     def compute_cost (self, theta, ilambda):
-        """ 代价函数 """
-        J = - 1 / self.m * (((self.y.T @ np.log(self.sigmiod(self.X @ theta))
-                + (1 - self.y).T @ np.log(1 - self.sigmiod(self.X @ theta))))
+        """ 代价函数, 测试用 """
+        grad = np.zeros(theta.shape)
+        J = - 1 / self.m * (((self.y.T @ np.log(self.sigmoid(self.X @ theta))
+                + (1 - self.y).T @ np.log(1 - self.sigmoid(self.X @ theta))))
                 + ilambda / (2 * self.m) * np.sum(np.power(theta[1:], 2)))  #加入正则项theta从1开始
-        return J
+
+        # 计算梯度
+        grad[0] = 1 / self.m * self.X[:, 0:1].T @ (self.sigmoid(self.X @ theta) - self.y)
+        grad[1:] = (1 / self.m * self.X[:, 1:].T @ (self.sigmoid(self.X @ theta) - self.y)
+                + ilambda / self.m * theta[1:])
+        return J, grad
 
     def gradient_descent (self, alpha, ilambda, num_iters):
         """ 梯度下降算法 """
@@ -64,13 +70,17 @@ class LogisticRegression:
         #迭代
         for iter in range(num_iters):
             theta_0 = (self.theta[0]
-                    - alpha / self.m * (self.X[:, 0:1].T @ (self.sigmiod(self.X @ self.theta) - self.y)))
+                    - alpha / self.m * (self.X[:, 0:1].T @ (self.sigmoid(self.X @ self.theta) - self.y)))
             theta_j = (self.theta[1:] * (1 - alpha  * ilambda / self.m)
-                    - alpha / self.m * (self.X[:, 1:].T @ (self.sigmiod(self.X @ self.theta) - self.y)))
+                    - alpha / self.m * (self.X[:, 1:].T @ (self.sigmoid(self.X @ self.theta) - self.y)))
 
             #保持θ同时更新
             self.theta[0] = theta_0
             self.theta[1:] = theta_j
+
+            # 保留最后一次的代价
+            if iter == num_iters-1:
+                self.J_end, _ = self.compute_cost(self.theta, ilambda)
 
             # ~ J_history[iter] = self.compute_cost(self.theta, ilambda)
 
@@ -79,7 +89,7 @@ class LogisticRegression:
 
     def prediction(self, X):
         """ 梯度下降算法预测 """
-        return self.sigmiod(X @ self.theta)
+        return self.sigmoid(X @ self.theta)
 
     def accuracy (self):
         """ 返回模型精确度 """
@@ -95,7 +105,7 @@ class LogisticRegression:
         plt.title('Cost')
         plt.xlabel('times')
         plt.ylabel('J(θ)')
-       
+
     def map_feature(self, X1, X2):
         """ 进行多项式特征的映射 """
         degree = 6;
@@ -107,22 +117,22 @@ class LogisticRegression:
 
     def plot_3D(self, X,Y, z,):
             #绘制3D图
-            fig = plt.figure()                      
+            fig = plt.figure()
             ax = Axes3D(fig)
             ax.plot_surface(X,Y, z, cmap=plt.cm.hot)  #cmap=plt.cm.hot
-            ax.contour(X,Y, z,  colors='red')     #X,Y数据空间, 第三个参数为值   offset=-60,   
+            ax.contour(X,Y, z,  colors='red')     #X,Y数据空间, 第三个参数为值   offset=-60,
             ax.set_title('Decision Boundary of 3D')
-            ax.set_xlabel('Value 1',color='r') #设置x坐标           
-            ax.set_ylabel('Value 2',color='r')          
+            ax.set_xlabel('Value 1',color='r') #设置x坐标
+            ax.set_ylabel('Value 2',color='r')
             ax.set_zlabel('Z label',color='r')
-    
+
     def plot_sample(self, data):
         """ 绘制样本 """
         #原始数据
-        X = data[:, 0:2]                    
+        X = data[:, 0:2]
         pos = (data[:, 2] == 1)
         neg = (data[:, 2] == 0)
-        
+
         #样本数据
         fig = plt.figure()
         plt.plot(X[pos][:, 0:1], X[pos][:, 1:2], 'g+')
@@ -131,11 +141,11 @@ class LogisticRegression:
         plt.ylabel('value2')
         plt.legend(['Admitted', 'Not admitted'])
         plt.title('Decision Boundary')
-            
+
     def plot_decision_boundary(self, data):
         """ 绘制决策边界 """
         self.plot_sample(data)
-        
+
         #线性
         if self.X.shape[1] <= 3:
             # Only need 2 points to define a line, so choose two endpoints
@@ -157,19 +167,19 @@ class LogisticRegression:
             u = np.linspace(-1, 1.5, 50).reshape(50, 1)
             v = np.linspace(-1, 1.5, 50).reshape(50, 1)
             # 生成网格数据
-            X, Y = np.meshgrid(u,v)           			 
-            
+            X, Y = np.meshgrid(u,v)
+
             # Evaluate z = theta*x over the grid
-            z = np.zeros((u.shape[0], v.shape[0]))            
+            z = np.zeros((u.shape[0], v.shape[0]))
             for i in range(u.shape[0]):
                 for j in range(v.shape[0]):
                     #对每一个网格都进行多项式的计算, numpy下标一个数字仅仅是向量, 需要进行切片才能成为二维向量!!!!
                     z[i,j] = self.map_feature(u[i:i+1], v[j:j+1]) @ self.theta
-                    
+
             # X,Y数据空间, 第三个参数为值 [显示的数据]
-            contour = plt.contour(X, Y, z, [0], colors='black')     
+            contour = plt.contour(X, Y, z, [0], colors='black')
             # ~ self.plot_3D(X, Y, z)
-            
+
         plt.show()
-        
-        
+
+
